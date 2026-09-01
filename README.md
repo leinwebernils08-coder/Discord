@@ -1,23 +1,24 @@
-# LUMA Discord Bot
+# LUMA Discord Bot – Grundsystem
 
-## Railway setup
-1. Upload all files from this folder to GitHub.
-2. Connect the repository to Railway.
-3. Add these Railway Variables:
-   - DISCORD_TOKEN
-   - CLIENT_ID
-   - GUILD_ID
-4. Railway runs:
-   `npm start`
-5. The bot should log:
-   - Slash command registered.
-   - LUMA Bot online as ...
+## Installation
+1. `npm install`
+2. `.env.example` in `.env` umbenennen
+3. Discord Token, Client ID und Guild ID eintragen
+4. `npm start`
 
-## Discord
-Use `/shop` in the Discord server whose ID is set as `GUILD_ID`.
+## Funktion
+- `/shop` öffnet das LUMA Hauptmenü
+- Buttons: Fortnite / Discord
+- Fortnite → FA Accounts / V-Bucks
+- Discord → Members / Accounts
+- Produktlisten mit deinen aktuellen Preisen
+- Produktseite mit Details- und Kaufen-Button
+- Zurück-Navigation
 
-## Editing products
-Edit `config.js` to change categories, products, prices, descriptions and buy links.
+## Noch nicht enthalten
+- Zahlungsabwicklung
+- automatische Lieferung
+- Datenbank
+- Admin-Produktverwaltung
 
-## Important
-Never upload your real `.env` file or Discord token to GitHub.
+Diese Punkte können später ergänzt werden.
