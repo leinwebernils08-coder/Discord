@@ -1,0 +1,17 @@
+{
+  "name": "luma-discord-bot",
+  "version": "1.0.0",
+  "description": "LUMA Discord shop bot",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.21.0",
+    "dotenv": "^16.6.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
