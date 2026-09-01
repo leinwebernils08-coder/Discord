@@ -4,193 +4,144 @@ import {
   ButtonStyle,
   EmbedBuilder
 } from "discord.js";
+import { BRAND, PRODUCTS, findProduct } from "./config.js";
 
-import { SHOP_NAME, categories, products } from "./config.js";
+const purple = ButtonStyle.Primary;
+const gray = ButtonStyle.Secondary;
+const green = ButtonStyle.Success;
 
-const brand = 0x8b5cf6;
-
-function homeButtons() {
-  const rows = [];
-  for (let i = 0; i < categories.length; i += 5) {
-    rows.push(
-      new ActionRowBuilder().addComponents(
-        categories.slice(i, i + 5).map(cat =>
-          new ButtonBuilder()
-            .setCustomId(`cat:${cat.id}`)
-            .setLabel(cat.name)
-            .setEmoji(cat.emoji)
-            .setStyle(ButtonStyle.Primary)
-        )
-      )
-    );
-  }
-  return rows;
+function baseEmbed(title, description) {
+  return new EmbedBuilder()
+    .setColor(BRAND.accent)
+    .setTitle(title)
+    .setDescription(description)
+    .setFooter({ text: BRAND.footer });
 }
 
 export function home() {
-  const embed = new EmbedBuilder()
-    .setColor(brand)
-    .setTitle(`✨ ${SHOP_NAME} Shop`)
-    .setDescription("Welcome to the LUMA shop. Choose a category below.");
-
-  for (const cat of categories) {
-    embed.addFields({
-      name: `${cat.emoji} ${cat.name}`,
-      value: cat.description,
-      inline: true
-    });
-  }
-
-  return { embeds: [embed], components: homeButtons() };
+  return {
+    embeds: [baseEmbed("LUMA SHOP", "Welcome to **LUMA**.\nBrowse our available categories and select a product.\n\n🛡️ Secure   ⚡ Fast   🤖 Automated")],
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId("cat:fortnite").setLabel("Fortnite").setEmoji("🎮").setStyle(purple),
+        new ButtonBuilder().setCustomId("cat:discord").setLabel("Discord").setEmoji("💬").setStyle(purple)
+      )
+    ]
+  };
 }
 
-export function category(categoryId) {
-  const cat = categories.find(c => c.id === categoryId);
-  const categoryProducts = products.filter(p => p.category === categoryId);
+export function category(name) {
+  const isFortnite = name === "fortnite";
+  return {
+    embeds: [baseEmbed(isFortnite ? "FORTNITE" : "DISCORD",
+      isFortnite ? "Browse our Fortnite product categories." : "Browse our Discord product categories.")],
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(isFortnite ? "group:fa" : "group:members")
+          .setLabel(isFortnite ? "FA Accounts" : "Members")
+          .setEmoji(isFortnite ? "🔐" : "👥").setStyle(purple),
+        new ButtonBuilder().setCustomId(isFortnite ? "group:vbucks" : "group:accounts")
+          .setLabel(isFortnite ? "V-Bucks Accounts" : "Accounts")
+          .setEmoji(isFortnite ? "💰" : "👤").setStyle(purple)
+      ),
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId("home").setLabel("Back").setEmoji("←").setStyle(gray)
+      )
+    ]
+  };
+}
 
-  const embed = new EmbedBuilder()
-    .setColor(brand)
-    .setTitle(`${cat?.emoji ?? "📦"} ${cat?.name ?? "Category"}`)
-    .setDescription(categoryProducts.length ? "Choose a product." : "No products available yet.");
+export function productList(group) {
+  const titleMap = {
+    fa: "FULL ACCESS ACCOUNTS",
+    vbucks: "V-BUCKS ACCOUNTS",
+    members: "DISCORD MEMBERS",
+    accounts: "DISCORD ACCOUNTS"
+  };
+
+  const products = group === "fa" ? PRODUCTS.fortnite.fa
+    : group === "vbucks" ? PRODUCTS.fortnite.vbucks
+    : group === "members" ? PRODUCTS.discord.members
+    : PRODUCTS.discord.accounts;
 
   const rows = [];
-  if (categoryProducts.length) {
-    rows.push(
-      new ActionRowBuilder().addComponents(
+  for (let i = 0; i < products.length; i += 5) {
+    rows.push(new ActionRowBuilder().addComponents(
+      ...products.slice(i, i + 5).map(p =>
         new ButtonBuilder()
-          .setCustomId(`group:${categoryId}`)
-          .setLabel("View products")
-          .setStyle(ButtonStyle.Primary)
+          .setCustomId(`product:${p.id}`)
+          .setLabel(`${p.name} • ${p.price}`)
+          .setStyle(purple)
       )
-    );
-  }
-  rows.push(
-    new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("home")
-        .setLabel("Back to home")
-        .setStyle(ButtonStyle.Secondary)
-    )
-  );
-
-  return { embeds: [embed], components: rows };
-}
-
-export function productList(categoryId) {
-  const categoryProducts = products.filter(p => p.category === categoryId);
-
-  const embed = new EmbedBuilder()
-    .setColor(brand)
-    .setTitle("🛒 Products")
-    .setDescription(categoryProducts.length ? "Select a product below." : "No products available.");
-
-  const rows = [];
-  for (let i = 0; i < categoryProducts.length; i += 5) {
-    rows.push(
-      new ActionRowBuilder().addComponents(
-        categoryProducts.slice(i, i + 5).map(product =>
-          new ButtonBuilder()
-            .setCustomId(`product:${product.id}`)
-            .setLabel(product.name)
-            .setStyle(ButtonStyle.Primary)
-        )
-      )
-    );
+    ));
   }
 
-  rows.push(
-    new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("home")
-        .setLabel("Home")
-        .setStyle(ButtonStyle.Secondary)
-    )
-  );
-
-  return { embeds: [embed], components: rows };
-}
-
-export function productPage(productId) {
-  const product = products.find(p => p.id === productId);
-
-  const embed = new EmbedBuilder()
-    .setColor(brand)
-    .setTitle(`📦 ${product?.name ?? "Product"}`)
-    .setDescription(product?.description ?? "Product not found.")
-    .addFields({ name: "Price", value: product?.price ?? "-", inline: true });
+  rows.push(new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(group === "fa" || group === "vbucks" ? "cat:fortnite" : "cat:discord")
+      .setLabel("Back")
+      .setEmoji("←")
+      .setStyle(gray)
+  ));
 
   return {
-    embeds: [embed],
+    embeds: [baseEmbed(titleMap[group], "Select a product to view details.")],
+    components: rows
+  };
+}
+
+export function productPage(id) {
+  const product = findProduct(id);
+  return {
+    embeds: [baseEmbed(product.name,
+      `**Category:** ${product.category}\n` +
+      `**Price:** ${product.price}\n` +
+      `**Status:** In Stock\n` +
+      `**Delivery:** Details configured by the seller\n\n` +
+      `Select an option below to continue.`)],
     components: [
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`details:${productId}`)
-          .setLabel("Details")
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId(`buy:${productId}`)
-          .setLabel("Buy")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`backgroup:${productId}`)
-          .setLabel("Back")
-          .setStyle(ButtonStyle.Primary)
+        new ButtonBuilder().setCustomId(`buy:${id}`).setLabel("Buy Now").setEmoji("🛒").setStyle(green),
+        new ButtonBuilder().setCustomId(`details:${id}`).setLabel("Details").setEmoji("📋").setStyle(gray)
+      ),
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`backgroup:${id}`).setLabel("Back to Products").setEmoji("←").setStyle(gray)
       )
     ]
   };
 }
 
-export function detailsPage(productId) {
-  const product = products.find(p => p.id === productId);
-
-  const embed = new EmbedBuilder()
-    .setColor(brand)
-    .setTitle(`ℹ️ ${product?.name ?? "Product"} — Details`)
-    .setDescription(product?.details ?? "No details available.");
-
+export function detailsPage(id) {
+  const product = findProduct(id);
   return {
-    embeds: [embed],
+    embeds: [baseEmbed(`${product.name} • DETAILS`,
+      `**Price:** ${product.price}\n\n` +
+      `Add your exact product description, delivery information, refund policy and requirements here.`)],
     components: [
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`product:${productId}`)
-          .setLabel("Back")
-          .setStyle(ButtonStyle.Secondary)
+        new ButtonBuilder().setCustomId(`product:${id}`).setLabel("Back").setEmoji("←").setStyle(gray)
       )
     ]
   };
 }
 
-export function buyPage(productId) {
-  const product = products.find(p => p.id === productId);
-  const url = product?.buyUrl;
-
-  const embed = new EmbedBuilder()
-    .setColor(brand)
-    .setTitle("🛒 Purchase")
-    .setDescription(url && url.startsWith("http")
-      ? `Click the button below to buy **${product.name}**.`
-      : "Set a valid buyUrl in config.js.");
-
-  const button = new ButtonBuilder()
-    .setLabel("Open checkout")
-    .setStyle(ButtonStyle.Link)
-    .setURL(url && url.startsWith("http") ? url : "https://example.com");
-
+export function buyPage(id) {
+  const product = findProduct(id);
   return {
-    embeds: [embed],
+    embeds: [baseEmbed("ORDER REQUEST",
+      `You selected **${product.name}** for **${product.price}**.\n\n` +
+      `The payment and delivery system is intentionally not connected yet. This is the next module to add.`)],
     components: [
-      new ActionRowBuilder().addComponents(button),
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`product:${productId}`)
-          .setLabel("Back")
-          .setStyle(ButtonStyle.Secondary)
+        new ButtonBuilder().setCustomId(`product:${id}`).setLabel("Back to Product").setEmoji("←").setStyle(gray)
       )
     ]
   };
 }
 
-export function groupForProduct(productId) {
-  return products.find(p => p.id === productId)?.category ?? "fortnite";
+export function groupForProduct(id) {
+  if (id.startsWith("fa_")) return "fa";
+  if (id.startsWith("vb_")) return "vbucks";
+  if (id.startsWith("m_")) return "members";
+  return "accounts";
 }
